@@ -5,40 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Haynes Swarm | Moonshot K2.5</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a1a; color: #eee; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: #2d2d2d; padding: 30px; border-radius: 12px; border-top: 8px solid #d32f2f; }
-        h1 { color: #d32f2f; text-align: center; }
-        input, button { padding: 12px; border-radius: 6px; border: 1px solid #555; font-size: 16px; margin-bottom: 10px; }
-        input { background: #3d3d3d; color: white; width: 100%; box-sizing: border-box; }
-        button { background: #d32f2f; color: white; border: none; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
-        button:hover { background: #ff5252; }
-        #output { background: #121212; padding: 20px; border-radius: 8px; min-height: 300px; white-space: pre-wrap; color: #00ff41; font-family: 'Consolas', monospace; line-height: 1.6; }
-        .status { text-align: center; font-style: italic; color: #888; margin-top: 10px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
+        .container { max-width: 850px; margin: auto; background: #1e1e1e; padding: 30px; border-radius: 12px; border-top: 8px solid #d32f2f; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { color: #d32f2f; text-align: center; margin-bottom: 5px; text-transform: uppercase; }
+        .subtitle { text-align: center; color: #888; margin-bottom: 25px; font-size: 14px; }
+        .input-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        input { flex-grow: 1; padding: 15px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; color: white; font-size: 16px; }
+        button { padding: 15px 25px; background-color: #d32f2f; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { background-color: #ff5252; }
+        button:disabled { background-color: #555; cursor: not-allowed; }
+        #output { background: #000; border: 1px solid #333; padding: 25px; border-radius: 8px; min-height: 400px; white-space: pre-wrap; color: #00ff41; font-family: 'Consolas', 'Courier New', monospace; line-height: 1.6; overflow-y: auto; max-height: 700px; }
+        .status-box { text-align: center; margin: 15px 0; font-size: 13px; color: #d32f2f; font-weight: bold; min-height: 20px; }
     </style>
 </head>
 <body>
+
 <div class="container">
     <h1>Haynes Research Swarm</h1>
-    <input type="password" id="apiKey" placeholder="Paste NVIDIA API Key (nvapi-...)">
-    <input type="text" id="vehicle" placeholder="Enter Vehicle (e.g., 2012 Chevy Silverado)">
-    <button onclick="runSwarm()">DEPLOY MOONSHOT SWARM</button>
-    <div id="status" class="status">System Standby</div>
-    <div id="output">Swarm Data will stream here...</div>
+    <div class="subtitle">Moonshot Kimi K2.5 • High-Reasoning Agentic Engine</div>
+
+    <input type="password" id="apiKey" placeholder="Enter NVIDIA API Key (nvapi-...)">
+    
+    <div class="input-row">
+        <input type="text" id="vehicle" placeholder="Enter Vehicle (e.g., 2014 Jeep Grand Cherokee)">
+        <button id="swarmBtn" onclick="runSwarm()">DEPLOY SWARM</button>
+    </div>
+
+    <div id="status" class="status-box"></div>
+    <div id="output">SYSTEM IDLE: Waiting for vehicle target...</div>
 </div>
 
 <script>
+    // Load key from storage if it exists
+    window.onload = () => {
+        const savedKey = localStorage.getItem('haynes_nv_key');
+        if (savedKey) document.getElementById('apiKey').value = savedKey;
+    };
+
     async function runSwarm() {
-        const key = document.getElementById('apiKey').value;
-        const vehicle = document.getElementById('vehicle').value;
+        const key = document.getElementById('apiKey').value.trim();
+        const vehicle = document.getElementById('vehicle').value.trim();
         const output = document.getElementById('output');
         const status = document.getElementById('status');
+        const btn = document.getElementById('swarmBtn');
 
-        if (!key || !vehicle) return alert("Key and Vehicle required.");
+        if (!key || !vehicle) return alert("Please provide both the API Key and a Vehicle name.");
 
+        // Save key for next time
+        localStorage.setItem('haynes_nv_key', key);
+
+        // Reset UI
         output.innerText = "";
-        status.innerText = "Initializing Kimi K2.5 Swarm Agents...";
+        btn.disabled = true;
+        btn.innerText = "SWARM ACTIVE...";
+        status.innerText = "Coordinating Agents: Scouring Reddit, NHTSA, and Forums...";
 
-        const prompt = `You are the Haynes Research Agent Swarm. Deeply research the ${vehicle}. Scour Reddit, NHTSA, and forums. Provide: 1. Top 10 Common Issues (ranked), 2. High-converting PDP Content, 3. 10 SEO Blog Outlines.`;
+        const prompt = `You are the Haynes Research Agent Swarm. 
+        Deeply research the ${vehicle}. 
+        MISSION:
+        1. TOP 10 COMMON ISSUES: Rank by frequency. Include codes and symptoms.
+        2. PDP CONTENT: Write a high-converting Product Detail Page summary.
+        3. 10 SEO BLOG OUTLINES: Catchy titles + 3 bullet points each.
+        
+        Deliver in a professional Haynes repair-manual tone.`;
 
         try {
             const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
@@ -50,20 +79,31 @@
                 body: JSON.stringify({
                     model: "moonshotai/kimi-k2.5",
                     messages: [{ role: "user", content: prompt }],
-                    temperature: 0.5,
-                    max_tokens: 4096,
-                    stream: false // Streaming is tricky with NVIDIA in basic HTML, so we'll get the full block at once for stability
+                    temperature: 0.6,
+                    top_p: 0.95,
+                    max_tokens: 4000,
+                    stream: false 
                 })
             });
 
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || errorData.message || "API Request Failed");
+            }
+
             const data = await response.json();
-            status.innerText = "Swarm Complete.";
+            status.innerText = "SWARM COMPLETE: DATA RETRIEVED.";
             output.innerText = data.choices[0].message.content;
-        } catch (e) {
-            status.innerText = "Error: Check Key or Connection.";
-            output.innerText = "Connection Failed. Make sure your NVIDIA key is active.";
+
+        } catch (error) {
+            status.innerText = "SWARM INTERRUPTED";
+            output.innerText = "ERROR: " + error.message + "\n\nTip: Ensure your nvapi- key is correct and you have remaining credits at build.nvidia.com.";
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "DEPLOY SWARM";
         }
     }
 </script>
+
 </body>
 </html>
