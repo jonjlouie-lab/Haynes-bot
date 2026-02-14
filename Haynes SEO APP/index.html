@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Haynes Launch Swarm v2.0</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding: 40px; background: #f4f4f4; color: #333; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; border-top: 10px solid #d92328; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1 { color: #d92328; margin-top: 0; }
+        .input-group { display: flex; gap: 10px; margin: 20px 0; }
+        input { flex-grow: 1; padding: 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; }
+        button { padding: 15px 30px; background: #d92328; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { background: #b01b1f; }
+        #output { margin-top: 30px; background: #fff; line-height: 1.6; }
+        .blog-card { background: #fff8f8; border: 1px solid #ffcccc; padding: 20px; margin: 15px 0; border-radius: 8px; position: relative; }
+        .copy-btn { position: absolute; top: 15px; right: 15px; background: #333; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Haynes Research Swarm</h1>
+        <p>Enter vehicle range (e.g., 2015-2022 Chevrolet Colorado)</p>
+        <div class="input-group">
+            <input type="text" id="vehicle" placeholder="Year Range Make Model">
+            <button onclick="runResearch()">Deploy Swarm</button>
+        </div>
+        <div id="output">Ready for input...</div>
+    </div>
+
+    <script>
+        async function runResearch() {
+            const vehicle = document.getElementById('vehicle').value;
+            const output = document.getElementById('output');
+            output.innerHTML = "<b>Swarm Active:</b> Scouring 20+ sources (Reddit, Forums, NHTSA)...";
+
+            try {
+                const response = await puter.ai.chat(
+                    `Act as Haynes Lead SEO & Technical Intelligence. Target: ${vehicle}.
+                    1. Scour 20+ sources (Reddit, Forums, NHTSA, CarProblemZoo).
+                    2. Rank TOP 10 most common issues with SEO symptoms.
+                    3. Write PDP 'Description' and 'What You Can Fix' sections.
+                    4. Generate 10 SEO Blog Outlines. Format each between BLOG_START and BLOG_END tags.
+                    5. List the 20+ unique sources used.`,
+                    { model: 'moonshotai/kimi-k2.5' }
+                );
+                
+                let formatted = response.replace(/BLOG_START([\s\S]*?)BLOG_END/g, (match, content) => {
+                    const id = 'blog-' + Math.random().toString(36).substr(2, 9);
+                    return `<div class="blog-card">
+                                <button class="copy-btn" onclick="copyText('${id}')">Copy Outline</button>
+                                <div id="${id}">${content}</div>
+                            </div>`;
+                });
+
+                output.innerHTML = formatted.replace(/\n/g, '<br>');
+            } catch (error) {
+                output.innerText = "Error: " + error.message;
+            }
+        }
+
+        function copyText(id) {
+            const text = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(text);
+            alert("Blog outline copied!");
+        }
+    </script>
+</body>
+</html>
