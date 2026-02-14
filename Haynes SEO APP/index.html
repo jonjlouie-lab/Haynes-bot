@@ -6,86 +6,115 @@
     <title>Haynes Research Swarm | Moonshot K2.5</title>
     <script src="https://js.puter.com/v2/"></script>
     <style>
-        body { font-family: 'Arial', sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 10px solid #d32f2f; }
-        h1 { color: #d32f2f; text-align: center; margin-bottom: 10px; }
-        p.subtitle { text-align: center; color: #666; margin-bottom: 30px; }
-        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        input { flex-grow: 1; padding: 15px; border: 2px solid #ddd; border-radius: 4px; font-size: 16px; }
-        button { padding: 15px 25px; background-color: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
-        button:hover { background-color: #b71c1c; }
-        #output { background: #fafafa; border: 1px solid #eee; padding: 20px; border-radius: 4px; min-height: 200px; white-space: pre-wrap; font-family: 'Courier New', monospace; line-height: 1.6; }
-        .controls { margin-top: 15px; display: flex; justify-content: flex-end; }
-        .loading { text-align: center; display: none; color: #d32f2f; font-weight: bold; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1a1a1a; color: #eee; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: #2d2d2d; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-top: 6px solid #d32f2f; }
+        h1 { color: #d32f2f; text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 25px; }
+        input { flex-grow: 1; padding: 15px; background: #3d3d3d; border: 1px solid #555; border-radius: 6px; color: white; font-size: 16px; }
+        button { padding: 15px 25px; background-color: #d32f2f; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { background-color: #ff5252; transform: translateY(-1px); }
+        
+        /* Progress Bar Styles */
+        #progress-container { display: none; margin-bottom: 20px; background: #444; border-radius: 10px; height: 12px; overflow: hidden; position: relative; }
+        #progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #d32f2f, #ff5252); transition: width 0.4s ease; }
+        #status-ticker { text-align: center; font-size: 13px; color: #aaa; margin-bottom: 10px; font-style: italic; min-height: 18px; }
+
+        #output { background: #121212; border: 1px solid #444; padding: 25px; border-radius: 8px; min-height: 300px; white-space: pre-wrap; font-family: 'Consolas', monospace; font-size: 14px; line-height: 1.6; color: #00ff41; overflow-y: auto; max-height: 600px; }
+        .copy-btn { margin-top: 15px; background-color: #444; width: 100%; }
+        .copy-btn:hover { background-color: #666; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Haynes Research Swarm</h1>
-    <p class="subtitle">Powered by Moonshot Kimi k2.5 Agent Swarm</p>
+    <div id="status-ticker">Ready to deploy agents...</div>
+    
+    <div id="progress-container">
+        <div id="progress-bar"></div>
+    </div>
 
     <div class="input-group">
-        <input type="text" id="vehicle" placeholder="Enter Year, Make, Model (e.g., 2018 Jeep Wrangler)">
-        <button onclick="runSwarm()">DEPLOY SWARM</button>
+        <input type="text" id="vehicle" placeholder="Enter Year, Make, Model (e.g. 2020 Ford F-150)">
+        <button id="deploy-btn" onclick="runSwarm()">DEPLOY SWARM</button>
     </div>
 
-    <div id="loading" class="loading">SWARM ACTIVE: Scouring Reddit, NHTSA, and Forums...</div>
-    <div id="output">Results will appear here...</div>
+    <div id="output">System Idle. Waiting for target...</div>
 
-    <div class="controls">
-        <button onclick="copyToClipboard()" style="background-color: #555;">Copy to Clipboard</button>
-    </div>
+    <button class="copy-btn" onclick="copyToClipboard()">COPY ALL RESEARCH</button>
 </div>
 
 <script>
+    const agents = [
+        "Initializing Orchestrator...",
+        "Deploying Reddit Scout...",
+        "Connecting to NHTSA Recall Database...",
+        "Scanning specialized forums (Vwvortex, Bimmerpost)...",
+        "Analyzing technical repair logs...",
+        "Ranking top 10 failure points...",
+        "Synthesizing SEO blog outlines...",
+        "Finalizing PDP content...",
+        "Cleaning up swarm data..."
+    ];
+
     async function runSwarm() {
         const vehicle = document.getElementById('vehicle').value;
         const output = document.getElementById('output');
-        const loading = document.getElementById('loading');
+        const ticker = document.getElementById('status-ticker');
+        const progressBar = document.getElementById('progress-bar');
+        const progressCont = document.getElementById('progress-container');
+        const btn = document.getElementById('deploy-btn');
 
-        if (!vehicle) {
-            alert("Please enter a vehicle.");
-            return;
-        }
+        if (!vehicle) return alert("Enter a vehicle first.");
 
+        // UI Reset
         output.innerText = "";
-        loading.style.display = "block";
+        progressCont.style.display = "block";
+        progressBar.style.width = "0%";
+        btn.disabled = true;
+        btn.innerText = "SWARM ACTIVE";
 
-        const systemPrompt = `You are the Haynes Research Agent Swarm. 
-        Your mission: Scour 20+ specific automotive sources (Reddit r/MechanicAdvice, NHTSA recalls, specialized forums, and repair logs) for the ${vehicle}.
-        
-        STRUCTURE YOUR OUTPUT AS FOLLOWS:
-        1. TOP 10 COMMON ISSUES: Rank them by frequency. Include technical symptoms (codes, sounds, behaviors).
-        2. PDP CONTENT: Write a high-converting Product Detail Page summary for repair parts related to these issues.
-        3. 10 SEO BLOG OUTLINES: Provide catchy titles and 3 bullet points each for blog posts targeting these specific problems.
-        
-        Be technical, accurate, and use a professional Haynes tone.`;
+        // Progress Ticker Loop
+        let progress = 0;
+        const tickerInterval = setInterval(() => {
+            if (progress < 90) {
+                progress += Math.random() * 8;
+                progressBar.style.width = Math.min(progress, 95) + "%";
+                ticker.innerText = agents[Math.floor((progress / 100) * agents.length)];
+            }
+        }, 800);
+
+        const systemPrompt = `You are a Kimi K2.5 Agent Swarm. Deeply research the ${vehicle}. 
+        Find the top 10 most common mechanical failures across Reddit, NHTSA, and forums. 
+        Rank them, provide symptoms, write a PDP marketing summary, and 10 SEO blog titles with outlines.`;
 
         try {
-            // Using Moonshot Kimi k2.5 for deep research
             const response = await puter.ai.chat(systemPrompt, {
                 model: 'moonshotai/kimi-k2.5',
                 stream: true 
             });
 
-            loading.style.display = "none";
+            clearInterval(tickerInterval);
+            progressBar.style.width = "100%";
+            ticker.innerText = "SWARM COMPLETE: Data Synthesized.";
 
             for await (const part of response) {
                 output.innerText += part.text;
-                window.scrollTo(0, document.body.scrollHeight);
+                output.scrollTop = output.scrollHeight;
             }
         } catch (error) {
-            loading.style.display = "none";
-            output.innerText = "Error: " + error.message + "\n\nPlease ensure you are signed into Puter and have verified your email.";
+            clearInterval(tickerInterval);
+            ticker.innerText = "SWARM ERROR";
+            output.innerText = "Connection failed. Please sign into Puter.js and verify your email.";
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "DEPLOY SWARM";
         }
     }
 
     function copyToClipboard() {
-        const text = document.getElementById('output').innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Research copied to clipboard!");
-        });
+        navigator.clipboard.writeText(document.getElementById('output').innerText);
+        alert("Haynes Research Copied!");
     }
 </script>
 
