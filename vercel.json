@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/swarm", "destination": "/api/swarm.js" }
+  ]
+}
